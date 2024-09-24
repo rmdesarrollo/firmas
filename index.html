@@ -9,6 +9,7 @@
             border: 1px solid black;
             display: block;
             margin-bottom: 20px;
+            touch-action: none; /* Evitar el comportamiento de desplazamiento en móviles */
         }
         #container {
             text-align: center;
@@ -39,15 +40,25 @@
             const ctx = canvas.getContext('2d');
             let dibujando = false;
 
+            function obtenerCoordenadas(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
             canvas.addEventListener('mousedown', function(e) {
                 dibujando = true;
+                const coords = obtenerCoordenadas(e);
                 ctx.beginPath();
-                ctx.moveTo(e.offsetX, e.offsetY);
+                ctx.moveTo(coords.x, coords.y);
             });
 
             canvas.addEventListener('mousemove', function(e) {
                 if (dibujando) {
-                    ctx.lineTo(e.offsetX, e.offsetY);
+                    const coords = obtenerCoordenadas(e);
+                    ctx.lineTo(coords.x, coords.y);
                     ctx.stroke();
                 }
             });
@@ -57,6 +68,28 @@
             });
 
             canvas.addEventListener('mouseleave', function() {
+                dibujando = false;
+            });
+
+            // Eventos táctiles
+            canvas.addEventListener('touchstart', function(e) {
+                dibujando = true;
+                const coords = obtenerCoordenadas(e.touches[0]);
+                ctx.beginPath();
+                ctx.moveTo(coords.x, coords.y);
+                e.preventDefault(); // Prevenir el scroll
+            });
+
+            canvas.addEventListener('touchmove', function(e) {
+                if (dibujando) {
+                    const coords = obtenerCoordenadas(e.touches[0]);
+                    ctx.lineTo(coords.x, coords.y);
+                    ctx.stroke();
+                }
+                e.preventDefault(); // Prevenir el scroll
+            });
+
+            canvas.addEventListener('touchend', function() {
                 dibujando = false;
             });
         }
@@ -80,7 +113,6 @@
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
-                    // Si tienes que usar un token, colócalo aquí
                 },
                 body: JSON.stringify(payload)
             })
@@ -97,3 +129,4 @@
     </script>
 </body>
 </html>
+
