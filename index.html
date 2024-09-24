@@ -89,34 +89,35 @@
         iniciarDibujo('firmaGerente');
 
         function guardarFirma(canvasId, role) {
-            const canvas = document.getElementById(canvasId);
-            const dataUrl = canvas.toDataURL();
-            firmas[role] = dataUrl;
+    const canvas = document.getElementById(canvasId);
+    const dataUrl = canvas.toDataURL(); // Convertir canvas a base64
 
-            if (firmas.jefe && firmas.coordinador && firmas.gerente) {
-                const firebaseUrl = 'https://suburbia-app-19dd2-default-rtdb.firebaseio.com/FIRMAS.json';
-                const token = 'AIzaSyBGqsbzvAIoUPgHn-G2OJ3OzHFCeiYfGt8';
+    const payload = {};
+    payload[role] = dataUrl; // Guardar la firma según el rol
 
-                fetch(firebaseUrl, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(firmas)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(`Firmas guardadas con éxito.`);
-                    console.log(data);
-                    firmas = { jefe: null, coordinador: null, gerente: null };
-                })
-                .catch(error => {
-                    alert(`Error al guardar las firmas.`);
-                    console.error(error);
-                });
-            } else {
-                alert(`Firma de ${role} guardada temporalmente.`);
+    // URL de Firebase
+    const firebaseUrl = 'https://suburbia-app-19dd2-default-rtdb.firebaseio.com/FIRMAS.json';
+
+    // Enviar a Firebase
+    fetch(firebaseUrl, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+            // No incluir el token por ahora
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`Firma de ${role} guardada con éxito.`);
+        console.log(data);
+    })
+    .catch(error => {
+        alert(`Error al guardar la firma de ${role}.`);
+        console.error(error);
+    });
+}
+
             }
         }
     </script>
