@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Firmas</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            margin-bottom: 10px;
+        }
+        button {
+            margin: 5px;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+</head>
+<body>
+    <h2>Firma del Jefe</h2>
+    <canvas id="firmaJefe" width="300" height="150"></canvas>
+    <button onclick="clearCanvas('firmaJefe')">Limpiar Firma Jefe</button>
+    <br>
+    
+    <h2>Firma del Coordinador</h2>
+    <canvas id="firmaCoordinador" width="300" height="150"></canvas>
+    <button onclick="clearCanvas('firmaCoordinador')">Limpiar Firma Coordinador</button>
+    <br>
+
+    <h2>Firma del Gerente</h2>
+    <canvas id="firmaGerente" width="300" height="150"></canvas>
+    <button onclick="clearCanvas('firmaGerente')">Limpiar Firma Gerente</button>
+    <br>
+
+    <button onclick="guardarFirmas()">Guardar Firmas en Firebase</button>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGqsbzvAIoUPgHn-G2OJ3OzHFCeiYfGt8",
+            authDomain: "suburbia-app-19dd2.firebaseapp.com",
+            databaseURL: "https://suburbia-app-19dd2-default-rtdb.firebaseio.com",
+            projectId: "suburbia-app-19dd2",
+            storageBucket: "suburbia-app-19dd2.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdefgh"
+        };
+
+        // Inicializa Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Capturar las firmas en los canvas
+        const canvasJefe = document.getElementById('firmaJefe');
+        const ctxJefe = canvasJefe.getContext('2d');
+
+        const canvasCoordinador = document.getElementById('firmaCoordinador');
+        const ctxCoordinador = canvasCoordinador.getContext('2d');
+
+        const canvasGerente = document.getElementById('firmaGerente');
+        const ctxGerente = canvasGerente.getContext('2d');
+
+        let isDrawing = false;
+
+        // Función para iniciar el dibujo en el canvas
+        function startDrawing(e, canvas, ctx) {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        }
+
+        // Función para dibujar en el canvas
+        function draw(e, canvas, ctx) {
+            if (!isDrawing) return;
+            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.stroke();
+        }
+
+        // Función para detener el dibujo
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        // Event listeners para cada canvas (jefe, coordinador, gerente)
+        canvasJefe.addEventListener('mousedown', (e) => startDrawing(e, canvasJefe, ctxJefe));
+        canvasJefe.addEventListener('mousemove', (e) => draw(e, canvasJefe, ctxJefe));
+        canvasJefe.addEventListener('mouseup', stopDrawing);
+
+        canvasCoordinador.addEventListener('mousedown', (e) => startDrawing(e, canvasCoordinador, ctxCoordinador));
+        canvasCoordinador.addEventListener('mousemove', (e) => draw(e, canvasCoordinador, ctxCoordinador));
+        canvasCoordinador.addEventListener('mouseup', stopDrawing);
+
+        canvasGerente.addEventListener('mousedown', (e) => startDrawing(e, canvasGerente, ctxGerente));
+        canvasGerente.addEventListener('mousemove', (e) => draw(e, canvasGerente, ctxGerente));
+        canvasGerente.addEventListener('mouseup', stopDrawing);
+
+        // Función para limpiar el canvas
+        function clearCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Función para guardar las firmas en Firebase
+        function guardarFirmas() {
+            const firmaJefe = canvasJefe.toDataURL('image/png');
+            const firmaCoordinador = canvasCoordinador.toDataURL('image/png');
+            const firmaGerente = canvasGerente.toDataURL('image/png');
+
+            // Guardar en Firebase
+            firebase.database().ref('FIRMAS/jefe').set(firmaJefe)
+                .then(() => firebase.database().ref('FIRMAS/coordinador').set(firmaCoordinador))
+                .then(() => firebase.database().ref('FIRMAS/gerente').set(firmaGerente))
+                .then(() => alert('Firmas guardadas correctamente'))
+                .catch((error) => alert('Error al guardar firmas: ' + error.message));
+        }
+    </script>
+</body>
+</html>
