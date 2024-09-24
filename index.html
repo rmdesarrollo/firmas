@@ -33,8 +33,7 @@
     </div>
 
     <script>
-        let firmas = { jefe: null, coordinador: null, gerente: null };
-
+        // Configurar el dibujo en los canvas
         function iniciarDibujo(canvasId) {
             const canvas = document.getElementById(canvasId);
             const ctx = canvas.getContext('2d');
@@ -60,65 +59,40 @@
             canvas.addEventListener('mouseleave', function() {
                 dibujando = false;
             });
-
-            canvas.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                dibujando = true;
-                ctx.beginPath();
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-            });
-
-            canvas.addEventListener('touchmove', function(e) {
-                if (dibujando) {
-                    const rect = canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                    ctx.stroke();
-                }
-            });
-
-            canvas.addEventListener('touchend', function() {
-                dibujando = false;
-            });
         }
 
+        // Iniciar los tres canvas
         iniciarDibujo('firmaJefe');
         iniciarDibujo('firmaCoordinador');
         iniciarDibujo('firmaGerente');
 
+        // Función para guardar las firmas en Firebase
         function guardarFirma(canvasId, role) {
-    const canvas = document.getElementById(canvasId);
-    const dataUrl = canvas.toDataURL(); // Convertir canvas a base64
+            const canvas = document.getElementById(canvasId);
+            const dataUrl = canvas.toDataURL(); // Convertir canvas a base64
 
-    const payload = {};
-    payload[role] = dataUrl; // Guardar la firma según el rol
+            const firebaseUrl = 'https://suburbia-app-19dd2-default-rtdb.firebaseio.com/FIRMAS.json';
+            const payload = {};
+            payload[role] = dataUrl; // Guardar la firma según el rol
 
-    // URL de Firebase
-    const firebaseUrl = 'https://suburbia-app-19dd2-default-rtdb.firebaseio.com/FIRMAS.json';
-
-    // Enviar a Firebase
-    fetch(firebaseUrl, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json'
-            // No incluir el token por ahora
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(`Firma de ${role} guardada con éxito.`);
-        console.log(data);
-    })
-    .catch(error => {
-        alert(`Error al guardar la firma de ${role}.`);
-        console.error(error);
-    });
-}
-
-            }
+            // Enviar a Firebase
+            fetch(firebaseUrl, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // Si tienes que usar un token, colócalo aquí
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Firma de ${role} guardada con éxito.`);
+                console.log(data);
+            })
+            .catch(error => {
+                alert(`Error al guardar la firma de ${role}.`);
+                console.error(error);
+            });
         }
     </script>
 </body>
